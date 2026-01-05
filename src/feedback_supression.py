@@ -89,7 +89,7 @@ class Feedback_Suppression(buffer.Buffering):
             suppression_mask = np.ones_like(input_magnitude)
             
             # Aplicar supresión donde el feedback es significativo
-            feedback_threshold = 0.1  # Umbral para considerar feedback significativo
+            feedback_threshold = 0.05  # Umbral para considerar feedback significativo
             feedback_regions = feedback_magnitude > feedback_threshold
             
             # Crear máscara de supresión
@@ -113,7 +113,7 @@ class Feedback_Suppression(buffer.Buffering):
                 output_ch = np.pad(output_ch, (0, len(input_ch) - len(output_ch)))
             
             # Remover ventana y convertir de vuelta a int16
-            output_ch = output_ch / window  # Compensar la ventana
+            output_ch = output_ch / np.maximum(window, self.noise_floor)  # Compensar la ventana
             output_ch = np.clip(output_ch * 32768.0, -32768, 32767).astype(np.int16)
             
             output_signal[:, channel] = output_ch
@@ -140,7 +140,7 @@ class Feedback_Suppression(buffer.Buffering):
             high_correlation = np.abs(correlation) > correlation_threshold
             
             # Atenuar fuertemente las regiones con feedback
-            output_ch[high_correlation] = output_ch[high_correlation] * 0.1
+            output_ch[high_correlation] = output_ch[high_correlation] * 0.5
             
             output_signal[:, channel] = np.clip(output_ch, -32768, 32767).astype(np.int16)
         
